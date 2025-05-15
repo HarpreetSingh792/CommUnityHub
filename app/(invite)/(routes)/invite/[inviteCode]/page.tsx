@@ -1,6 +1,7 @@
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
 import { redirectToSignIn } from "@clerk/nextjs/server";
+import { MemberRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 interface InviteCodePageProps {
@@ -43,7 +44,7 @@ const InviteCodePage = async({ params }: InviteCodePageProps) => {
       members: {
         create: {
           profileId: profile.id,
-          role: "GUEST", // ✅ explicit and valid
+          role: MemberRole.GUEST, // ✅ THIS is correct
         },
       },
     },
