@@ -36,17 +36,18 @@ const InviteCodePage = async({ params }: InviteCodePageProps) => {
   }
 
   const server = await db.server.update({
-    where:{
-        inviteCode:params.inviteCode,
+    where: {
+      inviteCode: params.inviteCode,
     },
-    data:{
-        members:{
-            create:{
-                profileId:profile.id
-            }
-        }
-    }
-  })
+    data: {
+      members: {
+        create: {
+          profileId: profile.id,
+          role: "GUEST", // ✅ explicit and valid
+        },
+      },
+    },
+  });
 
   if(server) {
     return redirect(`/servers/${server.id}`)
