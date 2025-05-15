@@ -2,7 +2,6 @@ import { ChatMessages } from "@/components/chat-messages";
 import ChatHeader from "@/components/chat/chat-header";
 import { ChatInput } from "@/components/chat/chat-input";
 import { MediaRoom } from "@/components/media-room";
-import Slate from "@/components/slate/slate";
 import Canvas from "@/components/slate/slate-main";
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
@@ -17,7 +16,7 @@ interface ChannelIDPageProps {
   };
 }
 
-export const ChannelIDPage = async ({ params }: ChannelIDPageProps) => {
+export default async function Page({ params }: ChannelIDPageProps) {
   const profile = await currentProfile();
 
   if (!profile) {
@@ -47,15 +46,10 @@ export const ChannelIDPage = async ({ params }: ChannelIDPageProps) => {
 
   let slateComponent = null;
 
-if (channel.type === ChannelType.SLATE) {
-  const member = await db.member.findFirst({
-    where: {
-      profileId: profile?.id,
-    },
-  });
-  const canAudit = member?.role === "ADMIN" || member?.role === "MODERATOR";
-  slateComponent = <Canvas canAudit={canAudit} />;
-}
+  if (channel.type === ChannelType.SLATE) {
+    const canAudit = member.role === "ADMIN" || member.role === "MODERATOR";
+    slateComponent = <Canvas canAudit={canAudit} />;
+  }
 
   return (
     <div className="bg-white dark:bg-[#313338] flex flex-col h-screen place-content-between">
@@ -102,6 +96,4 @@ if (channel.type === ChannelType.SLATE) {
       {channel.type === ChannelType.SLATE && slateComponent}
     </div>
   );
-};
-
-export default ChannelIDPage;
+}
