@@ -9,6 +9,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Video,
+  ListTodo
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import ServerHeader from "./server-header";
@@ -18,6 +19,8 @@ import { ServerSection } from "./server-section";
 import { channel } from "diagnostics_channel";
 import { ServerChannel } from "./server-channel";
 import { ServerMember } from "./server-member";
+import ProgressBar from "../ui/progress-bar";
+import { OverallProgress } from "../todo/overallProgress";
 
 interface ServerSidebarProps {
   serverId: string;
@@ -28,6 +31,7 @@ const iconMap = {
   [ChannelType.AUDIO]: <Mic className="mr-2 h-4 w-4" />,
   [ChannelType.VIDEO]: <Video className="mr-2 h-4 w-4" />,
   [ChannelType.SLATE]: <PenLine className="mr-2 h-4 w-4" />,
+  [ChannelType.TODO]:<ListTodo className="mr-2 h-4 w-4"/>
 };
 
 const roleIconMap = {
@@ -88,9 +92,15 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
     (member) => member.profileId !== profile.id
   );
 
+  const todoChannels = server?.channels.filter(
+    (channel)=>channel.type===ChannelType.TODO
+  )
+
   const role = server.members.find(
     (member) => member.profileId === profile.id
   )?.role;
+
+ 
   return (
     <div className="flex flex-col h-full text-primary w-full dark:bg-[#2B2D31] bg-[#F2F3F5]">
       <ServerHeader server={server} role={role} />
@@ -129,6 +139,15 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                 label: "Visualization Channel",
                 type: "channel",
                 data: slateChannels?.map((channel) => ({
+                  id: channel.id,
+                  name: channel.name,
+                  icon: iconMap[channel.type],
+                })),
+              },
+              {
+                label: "Todo Channel",
+                type: "channel",
+                data: todoChannels?.map((channel) => ({
                   id: channel.id,
                   name: channel.name,
                   icon: iconMap[channel.type],
@@ -235,6 +254,33 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
           </div>
         )}
 
+        {/* Todo */}
+        {!!todoChannels?.length && (
+          <div className="mb-2">
+            <ServerSection
+              sectionType="channels"
+              channelType={ChannelType.TODO}
+              role={role}
+              label="Todo Channels"
+            />
+            {
+              (role==="ADMIN"||role==="MODERATOR")&&
+              <OverallProgress />
+            }
+            <div className="space-y-[2px]">
+              {todoChannels.map((channel) => (
+                <ServerChannel
+                  key={channel.id}
+                  channel={channel}
+                  role={role}
+                  server={server}
+                  isTodo={true}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Members */}
         {!!members?.length && (
           <div className="mb-2">
@@ -248,7 +294,7 @@ const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
             <div className="space-y-[2px]">
               {members.map((member) => (
                 <ServerMember key={member.id} member={member} server={server} />
-              ))}
+              ))} 
             </div>
           </div>
         )}

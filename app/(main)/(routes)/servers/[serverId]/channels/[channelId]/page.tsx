@@ -2,7 +2,9 @@ import { ChatMessages } from "@/components/chat-messages";
 import ChatHeader from "@/components/chat/chat-header";
 import { ChatInput } from "@/components/chat/chat-input";
 import { MediaRoom } from "@/components/media-room";
+import TaskColumnModal from "@/components/modals/create-task-column-model";
 import Canvas from "@/components/slate/slate-main";
+import Todo from "@/components/todo/todo";
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
 import { redirectToSignIn } from "@clerk/nextjs/server";
@@ -31,7 +33,11 @@ export default async function Page({ params }: ChannelIDPageProps) {
     where: {
       id: params.channelId,
     },
+    include: {
+      TaskColumn: true,
+    },
   });
+  
 
   const member = await db.member.findFirst({
     where: {
@@ -39,6 +45,8 @@ export default async function Page({ params }: ChannelIDPageProps) {
       profileId: profile?.id,
     },
   });
+
+  
 
   if (!channel || !member) {
     return redirect("/");
@@ -94,6 +102,15 @@ export default async function Page({ params }: ChannelIDPageProps) {
       )}
 
       {channel.type === ChannelType.SLATE && slateComponent}
+
+      {channel.type === ChannelType.TODO && <>
+      {
+        member.role === "ADMIN" || member.role === "MODERATOR"?(
+        channel.TaskColumn?.length>0?
+        <Todo  profileId={profile.id} role={member.role}  />:
+        <TaskColumnModal />):<Todo profileId={profile.id} role={member.role} />
+      }
+      </>}
     </div>
   );
 }

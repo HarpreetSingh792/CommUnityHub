@@ -8,16 +8,19 @@ datasource db {
 }
 
 model Profile {
-  id        String    @id @default(uuid())
-  userId    String    @unique
-  name      String
-  imageUrl  String    @db.Text
-  email     String    @db.Text
-  servers   Server[]
-  members   Member[]
-  channels  Channel[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id       String    @id @default(uuid())
+  userId   String    @unique
+  name     String
+  imageUrl String    @db.Text
+  email    String    @db.Text
+  servers  Server[]
+  members  Member[]
+  channels Channel[]
+  assignedTasks Task[] @relation("AssignedTasks")
+  createdTasks  Task[] @relation("CreatedTasks")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Server {
@@ -52,9 +55,9 @@ model Member {
   server    Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   messages              Message[]
-  directMessages DirectMessage[]
+  directMessages        DirectMessage[]
   conversationInitiated Conversation[]  @relation("MemberOne")
-  conversationReceived  Conversation[] @relation("MemberTwo")
+  conversationReceived  Conversation[]  @relation("MemberTwo")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -68,6 +71,7 @@ enum ChannelType {
   AUDIO
   VIDEO
   SLATE
+  TODO
 }
 
 model Channel {
@@ -81,11 +85,12 @@ model Channel {
   serverId String
   server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
-  slate Slate[]
+  slate    Slate[]
   messages Message[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  TaskColumn TaskColumn[]
 
   @@index([profileId])
   @@index([serverId])
@@ -118,24 +123,21 @@ model Conversation {
 
   directMessages DirectMessage[]
 
+  @@unique([memberOneId, memberTwoId])
   @@index([memberOneId])
   @@index([memberTwoId])
-
-  @@unique([memberOneId,memberTwoId])
-  
 }
 
-
-model DirectMessage{
-  id String @id @default(uuid())
-  content String @db.Text
+model DirectMessage {
+  id      String  @id @default(uuid())
+  content String  @db.Text
   fileUrl String? @db.Text
 
   memberId String
-  member Member @relation(fields: [memberId],references: [id], onDelete: Cascade)
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   conversationId String
-  conversation Conversation @relation(fields: [conversationId],references: [id],onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -146,15 +148,53 @@ model DirectMessage{
   @@index([conversationId])
 }
 
-
 model Slate {
-  id       String  @id @default(uuid())
-  canvasData  Json
-  canvasFile  Json? 
+  id         String   @id @default(uuid())
+  canvasData Json
+  canvasFile Json?
+  channelId  String
+  channel    Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([channelId])
+}
+
+model TaskColumn {
+  id    Int @id @default(autoincrement())
+  name  String
+
   channelId String
-  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  tasks Task[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  @@index([channelId])
 
+  @@unique([channelId, name]) // Prevent duplicate column names in a channel
+  @@index([channelId])
+}
+
+model Task {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+
+  // Drag/drop status → set by TaskColumn
+  columnId Int
+  column   TaskColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  assigneeId String
+  assignee   Profile @relation("AssignedTasks", fields: [assigneeId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   Profile @relation("CreatedTasks", fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([columnId])
+  @@index([assigneeId])
+  @@index([createdById])
 }

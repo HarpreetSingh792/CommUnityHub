@@ -4,13 +4,16 @@ import ActionTooltip from "@/components/action-tooltip";
 import { ModalType, useModal } from "@/hooks/use-modal-store";
 import { cn } from "@/lib/utils";
 import { Channel, ChannelType, MemberRole, Server } from "@prisma/client";
-import { Edit, Hash, Lock, Mic, PenLine, Trash, Video } from "lucide-react";
+import { Edit, Hash, Lock, Mic, PenLine, Trash, Video,ListTodo } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import ProgressBar from "../ui/progress-bar";
+import { useProgressStore } from "@/hooks/use-progress-store";
 
 interface ServerChannelProps {
   channel: Channel;
   server: Server;
   role?: MemberRole;
+  isTodo?:Boolean
 }
 
 
@@ -18,13 +21,16 @@ const iconMap = {
   [ChannelType.TEXT]: Hash,
   [ChannelType.AUDIO]: Mic,
   [ChannelType.VIDEO]: Video,
-  [ChannelType.SLATE]: PenLine
+  [ChannelType.SLATE]: PenLine,
+  [ChannelType.TODO]: ListTodo
 };
+
 
 export const ServerChannel = ({
   channel,
   server,
   role,
+  isTodo=false
 }: ServerChannelProps) => {
   
   const router = useRouter();
@@ -42,6 +48,12 @@ export const ServerChannel = ({
     onOpen(action,{channel,server})
   }
 
+  const channelProgress = useProgressStore(state =>
+    state.channelProgress.find(cp => cp.channelId === channel.id)?.progress || parseInt(localStorage.getItem("channelProgress")??"0")
+  );
+  
+  
+
   return (
     <button
       onClick={onClick}
@@ -51,6 +63,7 @@ export const ServerChannel = ({
       )}
     >
       <Icon className="flex-shrink-0 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+      <div className="w-full flex justify-between items-center gap-2">
       <p
         className={cn(
           "line-clamp-1 font-semibold text-xs text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-400 dark:group-hover:text-zinc-300 transition",
@@ -58,8 +71,11 @@ export const ServerChannel = ({
             "text-primary dark:text-zinc-200 dark:group-hover:text-white"
         )}
       >
-        {channel.name}
+        {channel.name} 
       </p>
+      {isTodo&&<ProgressBar progressPercentage={channelProgress} size={30} strokeWidth={4} color={channelProgress<=25?"#ae0e0e":channelProgress<=50?"#eb6f0c":channelProgress<=75?"#e6e40b":"#52b174"} fill={channelProgress<=25?"#ae0e0e":channelProgress<=50?"#eb6f0c":channelProgress<=75?"#e6e40b":"#52b174"} />}
+      </div>
+
       {channel.name !== "general" && role !== MemberRole.GUEST && (
         <div className="ml-auto flex items-center gap-x-2">
           <ActionTooltip label="Edit" side="top">
