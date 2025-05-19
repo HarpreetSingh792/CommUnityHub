@@ -34,7 +34,7 @@ export default async function Page({ params }: ChannelIDPageProps) {
       id: params.channelId,
     },
     include: {
-      TaskColumn: true,
+      taskColumn: true,
     },
   });
   
