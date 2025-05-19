@@ -106,7 +106,7 @@ export default async function Page({ params }: ChannelIDPageProps) {
       {channel.type === ChannelType.TODO && <>
       {
         member.role === "ADMIN" || member.role === "MODERATOR"?(
-        channel.TaskColumn?.length>0?
+        channel.taskColumn?.length>0?
         <Todo  profileId={profile.id} role={member.role}  />:
         <TaskColumnModal />):<Todo profileId={profile.id} role={member.role} />
       }
