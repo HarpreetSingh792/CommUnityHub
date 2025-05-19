@@ -63,7 +63,13 @@ export default function TodoBoard({profileId,role}:{ profileId:String,role:Strin
     }
 
     fetch()
-  }, [channelId,refetch]);
+
+    // Setup interval to fetch every 30 seconds
+    const intervalId = setInterval(fetch, 30000);
+
+    // Cleanup interval on unmount or channelId change
+    return () => clearInterval(intervalId);
+  }, [channelId,refetch,setChannelProgress, setOverallProgress]);
 
 const triggerRefetch = () => {
     setRefetch(prev => !prev);
