@@ -52,9 +52,9 @@ const DeleteColumnModal = ({
             Delete Column
           </DialogTitle>
           <DialogDescription className="text-center text-zinc-500">
-            Are you sure you want to delete the column{" "}
-            <span className="font-semibold text-indigo-500">"{columnName}"</span>?<br />
-            This action cannot be undone.
+          Are you sure you want to delete the column{" "}
+        <span className="font-semibold text-indigo-500">&quot;{columnName}&quot;</span>?<br />
+        This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="bg-gray-100 px-6 py-4">

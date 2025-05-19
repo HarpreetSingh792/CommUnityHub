@@ -53,7 +53,7 @@ const DeleteTaskModal = ({
           </DialogTitle>
           <DialogDescription className="text-center text-zinc-500">
             Are you sure you want to delete the task{" "}
-            <span className="font-semibold text-indigo-500">"{title}"</span>?<br />
+            <span className="font-semibold text-indigo-500">&quot;{title}&quot;</span>?<br />
             This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
