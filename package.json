@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "migrate-db":"npx prisma migrate deploy",
     "lint": "next lint"
   },
   "dependencies": {
